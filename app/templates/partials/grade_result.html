@@ -1,0 +1,7 @@
+<div class="review-card grade-done" id="review-card-{{ result.card_id }}">
+    <p class="grade-done-text">
+        {% if result.grade == 'remember' %}记得牢固{% elif result.grade == 'fuzzy' %}还有点模糊{% else %}没关系，重置重学{% endif %}
+        · 下次复习 {{ result.due_date }}（{{ result.interval }} 天后）
+    </p>
+</div>
+<span id="review-badge" class="nav-badge{% if not review_due %} hidden{% endif %}" hx-swap-oob="true">{{ review_due or '' }}</span>

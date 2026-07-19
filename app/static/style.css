@@ -1,0 +1,1766 @@
+/* ============================================================
+   Lyrien · 芙宁娜歌剧院主题
+   概念：页面即歌剧院，每日卡片是一出剧目的若干幕。
+   - 居中"水线"中轴，各幕左右交错、宽度不一、轻微叠压（舞台调度）
+   - 第一幕为"开幕剧"宽卡 + 聚光灯锥形光
+   - 荒芒双性：普通卡水蓝（荒性），探索卡鎏金（芒性）
+   形状规则：卡片 20px，内嵌面板 12px，按钮/徽章全圆角。
+   颜色规则：水蓝为唯一主强调色；鎏金仅用于"特邀/探索"语义与歌剧装饰。
+   ============================================================ */
+
+:root {
+  /* 芙宁娜主题色板 */
+  --bg-deep: #0b1220;
+  --bg-layer: #111c2e;
+  --water: #38bdf8;
+  --water-light: #7dd3fc;
+  --water-glow: #bae6fd;
+  --water-dark: #075985;
+  --water-deep: #0369a1;
+  --gold: #fbbf24;
+  --gold-light: #f59e0b;
+  --text: #f8fafc;
+  --text-muted: #94a3b8;
+  --card-bg: linear-gradient(160deg, rgba(23, 36, 58, 0.85), rgba(13, 22, 38, 0.78));
+  --card-border: rgba(125, 211, 252, 0.16);
+  --card-border-strong: rgba(125, 211, 252, 0.42);
+  --radius-card: 20px;
+  --radius-panel: 12px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  background:
+    radial-gradient(circle at 20% 10%, rgba(56, 189, 248, 0.18), transparent 35%),
+    radial-gradient(circle at 80% 30%, rgba(7, 89, 133, 0.28), transparent 40%),
+    radial-gradient(circle at 50% 90%, rgba(56, 189, 248, 0.12), transparent 45%),
+    linear-gradient(180deg, var(--bg-deep) 0%, var(--bg-layer) 100%);
+  background-size: 200% 200%;
+  color: var(--text);
+  font-family: "LXGW WenKai", "Noto Sans SC", system-ui, sans-serif;
+  line-height: 1.65;
+  animation: ocean-shift 24s ease-in-out infinite;
+  position: relative;
+  overflow-x: hidden;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 70% 80%, rgba(251, 191, 36, 0.06), transparent 25%),
+    radial-gradient(circle at 30% 60%, rgba(56, 189, 248, 0.05), transparent 20%);
+  z-index: 0;
+}
+
+@keyframes ocean-shift {
+  0%, 100% { background-position: 0% 0%, 100% 0%, 50% 100%, 0 0; }
+  50% { background-position: 100% 100%, 0% 100%, 50% 0%, 0 0; }
+}
+
+/* 漂浮水滴装饰 */
+.droplet {
+  position: fixed;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, var(--water-glow), var(--water) 40%, transparent 70%);
+  opacity: 0.15;
+  filter: blur(1px);
+  pointer-events: none;
+  z-index: 0;
+  animation: float-up 18s ease-in-out infinite;
+}
+
+.droplet:nth-child(1) { width: 24px; height: 24px; left: 8%; bottom: -30px; animation-delay: 0s; }
+.droplet:nth-child(2) { width: 16px; height: 16px; left: 22%; bottom: -20px; animation-delay: 3s; }
+.droplet:nth-child(3) { width: 32px; height: 32px; left: 78%; bottom: -40px; animation-delay: 6s; }
+.droplet:nth-child(4) { width: 12px; height: 12px; left: 88%; bottom: -15px; animation-delay: 9s; }
+.droplet:nth-child(5) { width: 20px; height: 20px; left: 55%; bottom: -25px; animation-delay: 12s; }
+
+@keyframes float-up {
+  0% { transform: translateY(0) scale(1); opacity: 0; }
+  15% { opacity: 0.2; }
+  85% { opacity: 0.15; }
+  100% { transform: translateY(-110dvh) scale(0.6); opacity: 0; }
+}
+
+/* 页面容器 */
+.page-wrap {
+  position: relative;
+  z-index: 1;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 3rem 1.5rem 6rem;
+}
+
+/* ============================================================
+   页头：歌剧海报
+   ============================================================ */
+.hero-badge {
+  text-align: center;
+  margin-bottom: 4rem;
+}
+
+.title-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+}
+
+/* 海报两侧鎏金装饰线 */
+.title-row::before,
+.title-row::after {
+  content: "";
+  height: 1px;
+  width: min(140px, 18vw);
+}
+
+.title-row::before {
+  background: linear-gradient(90deg, transparent, rgba(251, 191, 36, 0.65));
+}
+
+.title-row::after {
+  background: linear-gradient(90deg, rgba(251, 191, 36, 0.65), transparent);
+}
+
+.hero-badge h1 {
+  font-family: "Cinzel", "Source Han Serif CN", "Noto Serif SC", serif;
+  font-size: clamp(2.4rem, 6vw, 3.6rem);
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  margin: 0;
+  background: linear-gradient(180deg, #fff 0%, var(--water-light) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.hero-badge p {
+  color: var(--text-muted);
+  font-size: 0.98rem;
+  margin: 0.7rem 0 0;
+  letter-spacing: 0.06em;
+}
+
+/* ============================================================
+   剧目单栏（日期 + 刷新）
+   ============================================================ */
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 3.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(125, 211, 252, 0.16);
+}
+
+.section-header h2 {
+  font-family: "Cinzel", "Source Han Serif CN", serif;
+  font-size: 1.15rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--water-glow);
+  margin: 0;
+}
+
+/* ============================================================
+   节目单：水线中轴 + 舞台调度
+   ============================================================ */
+.programme {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 2rem;
+}
+
+/* 居中水线 */
+.programme::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 1px;
+  background: linear-gradient(
+    180deg,
+    transparent,
+    rgba(125, 211, 252, 0.3) 6%,
+    rgba(125, 211, 252, 0.3) 94%,
+    transparent
+  );
+}
+
+/* 沿水线上升的气泡 */
+.programme::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 8px;
+  margin-left: -4px;
+  background-image: radial-gradient(circle, rgba(186, 230, 253, 0.55) 1.5px, transparent 2.2px);
+  background-size: 8px 96px;
+  background-repeat: repeat-y;
+  opacity: 0.55;
+  animation: bubble-rise 9s linear infinite;
+}
+
+@keyframes bubble-rise {
+  from { background-position-y: 0; }
+  to { background-position-y: -96px; }
+}
+
+/* 每一"幕"：左右交错站位，相邻轻微叠压 */
+.act {
+  position: relative;
+  width: 47%;
+  opacity: 0;
+  transform: translateY(26px);
+  animation: act-enter 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.act:nth-child(1) { animation-delay: 0.08s; }
+.act:nth-child(2) { animation-delay: 0.18s; }
+.act:nth-child(3) { animation-delay: 0.28s; }
+.act:nth-child(4) { animation-delay: 0.38s; }
+.act:nth-child(5) { animation-delay: 0.48s; }
+
+/* 开幕剧：宽幕主演卡，居中压住水线 */
+.act-featured {
+  width: min(880px, 86%);
+  margin: 0 auto 5rem;
+}
+
+/* 常规幕左右交错；宽幕跨线（演员越过舞台中线） */
+.act:not(.act-featured):nth-child(even) {
+  align-self: flex-start;
+  margin-left: 2%;
+}
+
+.act:not(.act-featured):nth-child(odd) {
+  align-self: flex-end;
+  margin-right: 2%;
+}
+
+.act:not(.act-featured):nth-child(3n) {
+  width: 54%;
+}
+
+/* 相邻幕叠压，制造舞台纵深感 */
+.act:not(.act-featured) + .act {
+  margin-top: -2.75rem;
+}
+
+.act-featured + .act {
+  margin-top: -2.25rem;
+}
+
+.act:hover {
+  z-index: 6;
+}
+
+@keyframes act-enter {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ============================================================
+   玻璃卡片
+   ============================================================ */
+.furina-card {
+  position: relative;
+  border-radius: var(--radius-card);
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  padding: 1.9rem 2rem;
+  overflow: hidden;
+  transition:
+    transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 0.35s ease;
+}
+
+.furina-card:hover {
+  transform: translateY(-5px);
+  border-color: var(--card-border-strong);
+  box-shadow:
+    0 24px 60px rgba(3, 15, 30, 0.55),
+    0 0 0 1px rgba(125, 211, 252, 0.12);
+}
+
+/* 开幕剧：顶部聚光灯锥形光 */
+.act-featured .furina-card::before {
+  content: "";
+  position: absolute;
+  top: -42%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 72%;
+  height: 85%;
+  background: conic-gradient(
+    from 180deg at 50% 0%,
+    transparent 41%,
+    rgba(186, 230, 253, 0.13) 50%,
+    transparent 59%
+  );
+  pointer-events: none;
+  transition: opacity 0.35s ease;
+}
+
+/* 开幕剧：舞台檐口鎏金线 */
+.act-featured .furina-card::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 22%;
+  right: 22%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(251, 191, 36, 0.75), transparent);
+}
+
+/* 特邀（探索卡）：芒性鎏金 */
+.furina-card.explore {
+  border-color: rgba(251, 191, 36, 0.32);
+}
+
+.furina-card.explore:not(.act-featured .furina-card)::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 45%;
+  height: 55%;
+  background: radial-gradient(circle at 100% 0%, rgba(251, 191, 36, 0.1), transparent 70%);
+  pointer-events: none;
+}
+
+.furina-card.explore:hover {
+  border-color: rgba(251, 191, 36, 0.5);
+  box-shadow:
+    0 24px 60px rgba(30, 20, 3, 0.5),
+    0 0 0 1px rgba(251, 191, 36, 0.14);
+}
+
+/* 鼠标光晕层 */
+.glow-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  background: radial-gradient(
+    circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+    rgba(56, 189, 248, 0.16),
+    transparent 45%
+  );
+  transition: opacity 0.3s ease;
+  border-radius: inherit;
+}
+
+.furina-card:hover .glow-layer {
+  opacity: 1;
+}
+
+/* 剧目页码水印 */
+.act-numeral {
+  position: absolute;
+  top: 0.6rem;
+  right: 1.1rem;
+  font-family: "Cinzel", serif;
+  font-size: 4.4rem;
+  font-weight: 700;
+  line-height: 1;
+  color: rgba(125, 211, 252, 0.07);
+  pointer-events: none;
+  transition: color 0.35s ease;
+}
+
+.act-featured .act-numeral {
+  font-size: 6rem;
+}
+
+.furina-card.explore .act-numeral {
+  color: rgba(251, 191, 36, 0.09);
+}
+
+.furina-card:hover .act-numeral {
+  color: rgba(125, 211, 252, 0.13);
+}
+
+.furina-card.explore:hover .act-numeral {
+  color: rgba(251, 191, 36, 0.16);
+}
+
+/* 幕标 + 特邀徽章 */
+.card-topline {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.9rem;
+  padding-right: 4.5rem;
+}
+
+.act-label {
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.3em;
+  color: var(--water-light);
+  opacity: 0.85;
+}
+
+.card-badge {
+  flex-shrink: 0;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  border: 1px solid rgba(251, 191, 36, 0.55);
+  color: var(--gold);
+  background: rgba(251, 191, 36, 0.1);
+}
+
+/* 剧名 */
+.card-title {
+  position: relative;
+  font-family: "Cinzel", "LXGW WenKai", "Source Han Serif CN", serif;
+  font-size: 1.2rem;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--text);
+  margin: 0 0 1.1rem;
+  padding-right: 3rem;
+}
+
+.act-featured .card-title {
+  font-size: 1.55rem;
+  padding-right: 5rem;
+}
+
+/* 卡片内容层级 */
+.card-body {
+  position: relative;
+}
+
+/* 核心概念：lead 段落 */
+.card-lead {
+  margin: 0 0 1.2rem;
+  font-size: 1.02rem;
+  line-height: 1.75;
+  color: #e6f2fb;
+}
+
+.act-featured .card-lead {
+  font-size: 1.08rem;
+}
+
+/* 两个字段小块；开幕剧内双列 */
+.card-fields {
+  display: grid;
+  gap: 1rem;
+  margin-bottom: 1.2rem;
+}
+
+.act-featured .card-fields {
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
+.card-field .field-label {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  color: var(--water-light);
+  opacity: 0.8;
+  margin-bottom: 0.3rem;
+}
+
+.card-field p {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.7;
+  color: #b8c7d8;
+}
+
+/* 引导思考：谢幕提问（鎏金引言条） */
+.card-question {
+  margin: 0;
+  padding: 0.9rem 1.1rem;
+  border-left: 2px solid var(--gold);
+  border-radius: 0 var(--radius-panel) var(--radius-panel) 0;
+  background: linear-gradient(90deg, rgba(251, 191, 36, 0.08), transparent 70%);
+}
+
+.card-question .field-label {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  color: var(--gold);
+  opacity: 0.85;
+  margin-bottom: 0.3rem;
+}
+
+.card-question p {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.7;
+  color: #f1e8d4;
+}
+
+/* 按钮组 */
+.card-actions {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+.btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.55rem 1.1rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  overflow: hidden;
+  border: 1px solid transparent;
+  background: transparent;
+  transition: color 0.3s ease, border-color 0.3s ease, transform 0.15s ease;
+}
+
+.btn:active {
+  transform: scale(0.97);
+}
+
+.btn-primary {
+  color: var(--water-glow);
+  border-color: var(--water);
+  background: rgba(56, 189, 248, 0.08);
+}
+
+.btn-primary::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, var(--water-deep), var(--water));
+  transform: translateX(-101%);
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: -1;
+}
+
+.btn-primary:hover {
+  color: var(--bg-deep);
+  border-color: var(--water-light);
+}
+
+.btn-primary:hover::before {
+  transform: translateX(0);
+}
+
+.btn-ghost {
+  color: var(--text-muted);
+  border-color: rgba(148, 163, 184, 0.25);
+}
+
+.btn-ghost:hover {
+  color: var(--text);
+  border-color: rgba(148, 163, 184, 0.55);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* 反馈按钮组与已记录提示 */
+.feedback-group {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.feedback-note {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  border-left: 2px solid var(--water);
+  padding-left: 0.6rem;
+  animation: fade-in 0.4s ease;
+}
+
+/* 深挖展开区：空时不渲染盒子 */
+.dig-output {
+  position: relative;
+  margin-top: 1.25rem;
+  padding: 1.25rem;
+  border-radius: var(--radius-panel);
+  background: rgba(7, 89, 133, 0.18);
+  border: 1px solid rgba(56, 189, 248, 0.18);
+  color: #e2e8f0;
+  font-size: 0.92rem;
+  line-height: 1.7;
+  white-space: pre-wrap;
+  animation: fade-in 0.4s ease;
+}
+
+.dig-output:empty {
+  display: none;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* 卡底脚注：标签 + 来源 */
+.card-foot {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem 1rem;
+  flex-wrap: wrap;
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(125, 211, 252, 0.12);
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.tag-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  color: var(--water-light);
+  background: rgba(56, 189, 248, 0.08);
+  font-size: 0.75rem;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.tag-pill:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(56, 189, 248, 0.18);
+}
+
+.card-source {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin-left: auto;
+}
+
+.source-link {
+  color: var(--text-muted);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.25);
+  transition: color 0.2s ease, border-color 0.2s ease;
+}
+
+.source-link:hover {
+  color: var(--water-light);
+  border-color: var(--water);
+}
+
+/* ============================================================
+   排演中（加载态）
+   ============================================================ */
+.cooking-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 40dvh;
+  text-align: center;
+}
+
+.water-orbits {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.orb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, var(--water-glow), var(--water));
+  box-shadow: 0 0 14px rgba(56, 189, 248, 0.5);
+  animation: bounce-orb 1.2s ease-in-out infinite;
+}
+
+.orb:nth-child(2) { animation-delay: 0.15s; }
+.orb:nth-child(3) { animation-delay: 0.3s; }
+
+@keyframes bounce-orb {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-18px); }
+}
+
+.cooking-stage h2 {
+  font-family: "Cinzel", "Source Han Serif CN", serif;
+  color: var(--water-light);
+  font-size: 1.35rem;
+  margin: 0 0 0.4rem;
+}
+
+.cooking-stage p {
+  color: var(--text-muted);
+  margin: 0;
+}
+
+/* 刷新按钮 */
+.btn-refresh {
+  color: var(--text-muted);
+  border-color: rgba(56, 189, 248, 0.25);
+  font-size: 0.8rem;
+  padding: 0.4rem 0.9rem;
+}
+
+.btn-refresh:hover {
+  color: var(--water-light);
+  border-color: var(--water);
+  background: rgba(56, 189, 248, 0.08);
+}
+
+/* 底部水波 */
+.wave-footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 80px;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.35;
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 100%, rgba(56, 189, 248, 0.25), transparent 70%);
+}
+
+/* HTMX 加载指示器 */
+.htmx-indicator {
+  display: none;
+}
+
+.htmx-request .htmx-indicator,
+.htmx-request.htmx-indicator {
+  display: inline-flex;
+}
+
+/* ============================================================
+   响应式：平板收窄，手机撤掉中轴单列排布
+   ============================================================ */
+@media (max-width: 1023px) {
+  .act:not(.act-featured) {
+    width: 58%;
+  }
+
+  .act:not(.act-featured):nth-child(3n) {
+    width: 64%;
+  }
+
+  .act-featured {
+    width: 92%;
+  }
+}
+
+@media (max-width: 767px) {
+  .page-wrap {
+    padding: 2rem 1rem 5rem;
+  }
+
+  .hero-badge {
+    margin-bottom: 2.5rem;
+  }
+
+  .hero-badge h1 {
+    font-size: 2rem;
+  }
+
+  .section-header {
+    margin-bottom: 2rem;
+  }
+
+  .programme::before,
+  .programme::after {
+    display: none;
+  }
+
+  .act,
+  .act-featured,
+  .act:not(.act-featured):nth-child(3n) {
+    width: 100%;
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  .act-featured {
+    margin-bottom: 0;
+  }
+
+  .act + .act,
+  .act-featured + .act {
+    margin-top: 1.25rem;
+  }
+
+  .furina-card {
+    padding: 1.4rem 1.25rem;
+  }
+
+  .act-numeral {
+    font-size: 3.2rem;
+  }
+
+  .act-featured .act-numeral {
+    font-size: 4rem;
+  }
+
+  .act-featured .card-title {
+    font-size: 1.3rem;
+    padding-right: 3.5rem;
+  }
+
+  .card-topline {
+    padding-right: 3rem;
+  }
+
+  .act-featured .card-fields {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .card-actions {
+    gap: 0.5rem;
+  }
+
+  .feedback-group {
+    gap: 0.5rem;
+  }
+
+  .btn {
+    padding: 0.5rem 0.85rem;
+    font-size: 0.8rem;
+  }
+
+  .card-source {
+    margin-left: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ============================================================
+   Phase 3 · 主导航
+   ============================================================ */
+.main-nav {
+  display: flex;
+  justify-content: center;
+  gap: 0.75rem;
+  margin: -2rem 0 3rem;
+}
+
+.nav-link {
+  position: relative;
+  padding: 0.45rem 1.2rem;
+  border-radius: 999px;
+  border: 1px solid var(--card-border);
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 0.9rem;
+  background: rgba(13, 22, 38, 0.5);
+  backdrop-filter: blur(6px);
+  transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+
+.nav-link:hover {
+  color: var(--water-light);
+  border-color: var(--card-border-strong);
+}
+
+.nav-link.active {
+  color: var(--water-glow);
+  border-color: var(--water);
+  background: rgba(56, 189, 248, 0.12);
+}
+
+.nav-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.25rem;
+  height: 1.25rem;
+  margin-left: 0.4rem;
+  padding: 0 0.3rem;
+  border-radius: 999px;
+  background: var(--water);
+  color: var(--bg-deep);
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* ============================================================
+   Phase 3 · 知识库
+   ============================================================ */
+.kb-search {
+  max-width: 640px;
+  margin: 0 auto 2.5rem;
+}
+
+.kb-search-input {
+  width: 100%;
+  padding: 0.85rem 1.4rem;
+  border-radius: 999px;
+  border: 1px solid var(--card-border);
+  background: var(--card-bg);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.kb-search-input::placeholder {
+  color: rgba(148, 163, 184, 0.6);
+}
+
+.kb-search-input:focus {
+  border-color: var(--water);
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
+}
+
+.note-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+.note-item {
+  display: block;
+  padding: 1.25rem 1.5rem;
+  border-radius: var(--radius-card);
+  border: 1px solid var(--card-border);
+  background: var(--card-bg);
+  text-decoration: none;
+  color: var(--text);
+  transition: border-color 0.2s ease, transform 0.2s ease;
+}
+
+.note-item:hover {
+  border-color: var(--card-border-strong);
+  transform: translateY(-2px);
+}
+
+.note-item-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.note-item-head h3 {
+  margin: 0;
+  font-size: 1.05rem;
+  color: var(--water-glow);
+}
+
+.note-item-head time,
+.note-meta {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  font-family: "JetBrains Mono", monospace;
+  white-space: nowrap;
+}
+
+.note-excerpt {
+  margin: 0.6rem 0 0;
+  color: var(--text-muted);
+  font-size: 0.88rem;
+}
+
+.note-excerpt mark {
+  background: rgba(56, 189, 248, 0.25);
+  color: var(--water-glow);
+  border-radius: 4px;
+  padding: 0 2px;
+}
+
+.note-item .card-tags {
+  margin-top: 0.7rem;
+}
+
+.empty-hint {
+  text-align: center;
+  color: var(--text-muted);
+  padding: 3rem 1rem;
+}
+
+/* 笔记详情 */
+.note-detail {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 2rem 2.2rem;
+  border-radius: var(--radius-card);
+  border: 1px solid var(--card-border);
+  background: var(--card-bg);
+}
+
+.note-detail-head h2 {
+  margin: 0 0 0.5rem;
+  color: var(--water-glow);
+  font-size: 1.5rem;
+}
+
+.note-meta {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.note-detail-head .card-tags {
+  margin-top: 0.8rem;
+}
+
+/* Markdown 正文（深挖教程 / 笔记详情共用） */
+.prose-furina {
+  margin-top: 1.2rem;
+  line-height: 1.8;
+  color: var(--text);
+}
+
+.prose-furina h2,
+.prose-furina h3,
+.prose-furina h4 {
+  color: var(--water-light);
+  margin: 1.6em 0 0.6em;
+  line-height: 1.4;
+}
+
+.prose-furina h2 { font-size: 1.2rem; }
+.prose-furina h3 { font-size: 1.05rem; }
+
+.prose-furina p {
+  margin: 0.7em 0;
+}
+
+.prose-furina ul,
+.prose-furina ol {
+  padding-left: 1.4rem;
+  margin: 0.7em 0;
+}
+
+.prose-furina code {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.85em;
+  background: rgba(56, 189, 248, 0.12);
+  border-radius: 5px;
+  padding: 0.1em 0.4em;
+}
+
+.prose-furina pre {
+  background: rgba(7, 15, 28, 0.85);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-panel);
+  padding: 1rem 1.2rem;
+  overflow-x: auto;
+}
+
+.prose-furina pre code {
+  background: none;
+  padding: 0;
+}
+
+.prose-furina blockquote {
+  margin: 1em 0;
+  padding: 0.2rem 1rem;
+  border-left: 3px solid var(--water-dark);
+  color: var(--text-muted);
+}
+
+.prose-furina a {
+  color: var(--water-light);
+}
+
+/* 关联旧知 */
+.related-notes {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px dashed var(--card-border-strong);
+}
+
+.related-notes h3 {
+  margin: 0 0 0.8rem;
+  font-size: 0.95rem;
+  color: var(--water-light);
+}
+
+.related-notes ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.related-notes a {
+  color: var(--text);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.25);
+}
+
+.related-notes a:hover {
+  color: var(--water-light);
+  border-color: var(--water);
+}
+
+.related-tags {
+  margin-left: 0.6rem;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+}
+
+/* 深挖输出（卡片内联） */
+.dig-output.prose-furina {
+  border-top: 1px dashed var(--card-border-strong);
+  padding-top: 0.5rem;
+}
+
+.streaming::after {
+  content: "▋";
+  color: var(--water);
+  animation: caret-blink 0.8s step-end infinite;
+}
+
+@keyframes caret-blink {
+  50% { opacity: 0; }
+}
+
+.note-link {
+  display: inline-block;
+  margin-top: 0.9rem;
+  color: var(--water-light);
+  font-size: 0.88rem;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(56, 189, 248, 0.4);
+}
+
+.note-link:hover {
+  color: var(--water-glow);
+  border-color: var(--water-glow);
+}
+
+/* ============================================================
+   Phase 3 · 复习页
+   ============================================================ */
+.review-stats {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  align-self: center;
+}
+
+.review-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+.review-card {
+  position: relative;
+}
+
+.review-meta {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  font-family: "JetBrains Mono", monospace;
+  margin: 0.2rem 0 0.8rem;
+}
+
+.quiz-output {
+  white-space: pre-wrap;
+  color: var(--text);
+  font-size: 0.92rem;
+  line-height: 1.8;
+  margin-top: 0.8rem;
+}
+
+.quiz-output:empty {
+  display: none;
+}
+
+.grade-row {
+  margin-top: 1.2rem;
+  padding-top: 1rem;
+  border-top: 1px dashed var(--card-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.grade-buttons {
+  display: flex;
+  gap: 0.6rem;
+}
+
+.btn-grade {
+  border-radius: 999px;
+}
+
+.btn-forgot {
+  border-color: rgba(248, 113, 113, 0.45);
+  color: #fca5a5;
+}
+
+.btn-forgot:hover {
+  background: rgba(248, 113, 113, 0.12);
+  border-color: #f87171;
+}
+
+.btn-fuzzy {
+  border-color: rgba(251, 191, 36, 0.4);
+  color: var(--gold);
+}
+
+.btn-fuzzy:hover {
+  background: rgba(251, 191, 36, 0.1);
+  border-color: var(--gold);
+}
+
+.btn-remember {
+  border-color: rgba(56, 189, 248, 0.45);
+  color: var(--water-light);
+}
+
+.btn-remember:hover {
+  background: rgba(56, 189, 248, 0.12);
+  border-color: var(--water);
+}
+
+.grade-done {
+  padding: 1rem 1.5rem;
+  border-radius: var(--radius-card);
+  border: 1px dashed var(--card-border-strong);
+  background: rgba(56, 189, 248, 0.06);
+}
+
+.grade-done-text {
+  margin: 0;
+  color: var(--water-light);
+  font-size: 0.92rem;
+}
+
+.review-empty {
+  text-align: center;
+  padding: 4rem 1rem;
+  color: var(--text-muted);
+}
+
+.review-empty h3 {
+  color: var(--water-light);
+  margin: 0 0 0.5rem;
+}
+
+@media (max-width: 767px) {
+  .main-nav {
+    margin: -1.5rem 0 2rem;
+    gap: 0.5rem;
+  }
+
+  .nav-link {
+    padding: 0.4rem 0.9rem;
+    font-size: 0.82rem;
+  }
+
+  .note-detail {
+    padding: 1.4rem 1.2rem;
+  }
+
+  .grade-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+/* ============================================================
+   Phase 4 · 手动投喂
+   ============================================================ */
+.feed-bar {
+  max-width: 760px;
+  margin: 0 auto 2.5rem;
+}
+
+.feed-form {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.feed-input {
+  flex: 1;
+  padding: 0.7rem 1.3rem;
+  border-radius: 999px;
+  border: 1px solid var(--card-border);
+  background: var(--card-bg);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.feed-input::placeholder {
+  color: rgba(148, 163, 184, 0.55);
+}
+
+.feed-input:focus {
+  border-color: var(--water);
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
+}
+
+.feed-status,
+.report-status {
+  margin: 0.6rem 0 0;
+  padding-left: 1.3rem;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  min-height: 1.2em;
+}
+
+.feed-status:empty,
+.report-status:empty {
+  display: none;
+}
+
+/* ============================================================
+   Phase 4 · 问答页
+   ============================================================ */
+.ask-page {
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+.ask-form {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 2rem;
+}
+
+.ask-input {
+  flex: 1;
+  padding: 0.8rem 1.3rem;
+  border-radius: 999px;
+  border: 1px solid var(--card-border);
+  background: var(--card-bg);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 0.92rem;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.ask-input::placeholder {
+  color: rgba(148, 163, 184, 0.55);
+}
+
+.ask-input:focus {
+  border-color: var(--water);
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
+}
+
+.ask-answer {
+  padding: 0 0.4rem;
+}
+
+.ask-answer:empty {
+  display: none;
+}
+
+.ask-sources {
+  margin-top: 1.2rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.ask-sources:empty {
+  display: none;
+}
+
+.ask-sources-title {
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  margin-right: 0.25rem;
+}
+
+.source-chip {
+  padding: 0.25rem 0.8rem;
+  border-radius: 999px;
+  border: 1px solid var(--card-border);
+  color: var(--water-light);
+  font-size: 0.8rem;
+  text-decoration: none;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.source-chip:hover {
+  border-color: var(--water);
+  background: rgba(56, 189, 248, 0.1);
+}
+
+/* ============================================================
+   Phase 4 · 学习周报
+   ============================================================ */
+.report-page {
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+.profile-panel {
+  padding: 1.4rem 1.6rem;
+  border-radius: var(--radius-card);
+  border: 1px solid var(--card-border);
+  background: var(--card-bg);
+  margin-bottom: 2rem;
+}
+
+.profile-panel h3 {
+  margin: 0 0 1rem;
+  font-size: 0.95rem;
+  color: var(--water-light);
+}
+
+.profile-row {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin-bottom: 0.55rem;
+}
+
+.profile-row:last-child {
+  margin-bottom: 0;
+}
+
+.profile-name {
+  width: 7.5rem;
+  flex-shrink: 0;
+  font-size: 0.85rem;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.profile-track {
+  flex: 1;
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(56, 189, 248, 0.1);
+  overflow: hidden;
+}
+
+.profile-fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--water-dark), var(--water));
+  transition: width 0.6s ease;
+}
+
+.profile-weight {
+  width: 9rem;
+  flex-shrink: 0;
+  text-align: right;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.drift-up { color: #4ade80; margin-left: 0.35rem; }
+.drift-down { color: #fca5a5; margin-left: 0.35rem; }
+.drift-new { color: var(--gold); margin-left: 0.35rem; }
+
+.report-content {
+  padding: 1.6rem 1.8rem;
+  border-radius: var(--radius-card);
+  border: 1px solid var(--card-border);
+  background: var(--card-bg);
+}
+
+.report-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.report-head h3 {
+  margin: 0;
+  color: var(--water-glow);
+  font-size: 1.1rem;
+}
+
+.report-head time {
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  font-family: "JetBrains Mono", monospace;
+}
+
+.report-history {
+  margin-top: 2rem;
+}
+
+.report-history h3 {
+  font-size: 0.9rem;
+  color: var(--water-light);
+  margin: 0 0 0.7rem;
+}
+
+.report-history ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.report-history a {
+  padding: 0.3rem 0.9rem;
+  border-radius: 999px;
+  border: 1px solid var(--card-border);
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  text-decoration: none;
+  font-family: "JetBrains Mono", monospace;
+}
+
+.report-history a:hover,
+.report-history a.active {
+  color: var(--water-light);
+  border-color: var(--water);
+}
+
+/* ============================================================
+   Phase 4 · 知识考古
+   ============================================================ */
+.archaeology {
+  max-width: 760px;
+  margin: 2.5rem auto 0;
+  padding: 1.3rem 1.6rem;
+  border-radius: var(--radius-card);
+  border: 1px dashed rgba(251, 191, 36, 0.35);
+  background: rgba(251, 191, 36, 0.05);
+}
+
+.archaeology h3 {
+  margin: 0 0 0.6rem;
+  font-size: 0.9rem;
+  color: var(--gold);
+}
+
+.archaeology-body {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.archaeology-body:hover strong {
+  color: var(--gold);
+}
+
+.archaeology-date {
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  font-family: "JetBrains Mono", monospace;
+  white-space: nowrap;
+}
+
+@media (max-width: 767px) {
+  .feed-form,
+  .ask-form {
+    flex-direction: column;
+  }
+
+  .profile-name { width: 5.5rem; }
+  .profile-weight { width: 6.5rem; }
+}
+
+/* ============================================================
+   笔记编辑器（写笔记 / 编辑笔记）
+   ============================================================ */
+.note-editor-page {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.draft-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  max-width: 1100px;
+  margin: 0 auto 1.2rem;
+  padding: 0.7rem 1.2rem;
+  border-radius: var(--radius-panel);
+  border: 1px dashed rgba(251, 191, 36, 0.45);
+  background: rgba(251, 191, 36, 0.07);
+  color: var(--gold);
+  font-size: 0.85rem;
+}
+
+.draft-banner .btn {
+  padding: 0.2rem 0.8rem;
+  font-size: 0.78rem;
+}
+
+#note-editor-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.editor-title,
+.editor-tags {
+  width: 100%;
+  padding: 0.75rem 1.2rem;
+  border-radius: var(--radius-panel);
+  border: 1px solid var(--card-border);
+  background: var(--card-bg);
+  color: var(--text);
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.editor-title {
+  font-size: 1.15rem;
+  font-weight: 500;
+}
+
+.editor-tags {
+  font-size: 0.85rem;
+}
+
+.editor-title::placeholder,
+.editor-tags::placeholder,
+.editor-content::placeholder {
+  color: rgba(148, 163, 184, 0.5);
+}
+
+.editor-title:focus,
+.editor-tags:focus,
+.editor-content:focus {
+  border-color: var(--water);
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.12);
+}
+
+.editor-split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  min-height: 55dvh;
+}
+
+.editor-content {
+  width: 100%;
+  min-height: 55dvh;
+  resize: vertical;
+  padding: 1.1rem 1.2rem;
+  border-radius: var(--radius-card);
+  border: 1px solid var(--card-border);
+  background: var(--card-bg);
+  color: var(--text);
+  font-family: "JetBrains Mono", "LXGW WenKai", monospace;
+  font-size: 0.9rem;
+  line-height: 1.75;
+  outline: none;
+}
+
+.editor-preview {
+  min-height: 55dvh;
+  max-height: 75dvh;
+  overflow-y: auto;
+  margin-top: 0;
+  padding: 1.1rem 1.2rem;
+  border-radius: var(--radius-card);
+  border: 1px dashed var(--card-border);
+  background: rgba(13, 22, 38, 0.45);
+}
+
+.editor-preview:empty::before {
+  content: "预览区 —— 左边写，这里实时渲染";
+  color: rgba(148, 163, 184, 0.45);
+  font-size: 0.85rem;
+}
+
+.editor-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+}
+
+.editor-hint {
+  color: var(--text-muted);
+  font-size: 0.78rem;
+}
+
+@media (max-width: 900px) {
+  .editor-split {
+    grid-template-columns: 1fr;
+    min-height: unset;
+  }
+
+  .editor-content,
+  .editor-preview {
+    min-height: 35dvh;
+  }
+}

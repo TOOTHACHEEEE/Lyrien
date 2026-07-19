@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Lyrien{% endblock %}</title>
+
+    <!-- Fonts: Cinzel for opera/trial vibe, LXGW WenKai for Chinese body, JetBrains Mono for data -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/lxgw-wenkai-webfont@1.7.0/style.css" rel="stylesheet">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/htmx.org@1.9.12"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js"></script>
+
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <!-- Floating water droplets -->
+    <div class="droplet" aria-hidden="true"></div>
+    <div class="droplet" aria-hidden="true"></div>
+    <div class="droplet" aria-hidden="true"></div>
+    <div class="droplet" aria-hidden="true"></div>
+    <div class="droplet" aria-hidden="true"></div>
+
+    <div class="page-wrap">
+        <header class="hero-badge">
+            <div class="title-row">
+                <h1>Lyrien</h1>
+            </div>
+            <p>个人 AI 学习引擎 · 每天清晨献映 3 至 5 幕知识剧目</p>
+        </header>
+
+        <nav class="main-nav" aria-label="主导航">
+            <a href="/" class="nav-link{% if request.url.path == '/' %} active{% endif %}">今日卡片</a>
+            <a href="/review" class="nav-link{% if request.url.path == '/review' %} active{% endif %}">
+                复习<span id="review-badge" class="nav-badge{% if not review_due %} hidden{% endif %}">{{ review_due or '' }}</span>
+            </a>
+            <a href="/kb" class="nav-link{% if request.url.path.startswith('/kb') or request.url.path.startswith('/notes') %} active{% endif %}">知识库</a>
+            <a href="/ask" class="nav-link{% if request.url.path == '/ask' %} active{% endif %}">问答</a>
+            <a href="/report" class="nav-link{% if request.url.path.startswith('/report') %} active{% endif %}">周报</a>
+        </nav>
+
+        {% block content %}{% endblock %}
+    </div>
+
+    <div class="wave-footer" aria-hidden="true"></div>
+
+    <script src="/static/script.js"></script>
+</body>
+</html>

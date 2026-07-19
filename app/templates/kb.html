@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block title %}知识库 · Lyrien{% endblock %}
+
+{% block content %}
+<section class="kb-page">
+    <div class="section-header">
+        <h2>知识库 · {{ total }} 篇笔记</h2>
+        <a href="/notes/new" class="btn btn-primary">写笔记</a>
+    </div>
+
+    <div class="kb-search">
+        <input type="search" name="q" value="{{ query }}"
+               placeholder="搜索笔记全文（中文也可以）…"
+               hx-get="/kb/search" hx-trigger="input changed delay:400ms, search"
+               hx-target="#kb-results" hx-swap="innerHTML"
+               class="kb-search-input">
+    </div>
+
+    <div id="kb-results">
+        {% include "partials/note_list.html" %}
+    </div>
+</section>
+{% endblock %}

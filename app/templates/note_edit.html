@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}{% if note %}编辑笔记{% else %}写笔记{% endif %} · Lyrien{% endblock %}
+
+{% block content %}
+<section class="note-editor-page">
+    <div class="section-header">
+        <h2>{% if note %}编辑笔记{% else %}写笔记{% endif %}</h2>
+    </div>
+
+    <div class="draft-banner hidden" id="draft-banner">
+        <span id="draft-banner-text">检测到未保存的草稿</span>
+        <button type="button" class="btn btn-ghost" id="draft-restore">恢复</button>
+        <button type="button" class="btn btn-ghost" id="draft-discard">丢弃</button>
+    </div>
+
+    <form method="post" id="note-editor-form"
+          data-draft-key="lyrien:draft:{% if note %}edit:{{ note.id }}{% else %}new{% endif %}">
+        <input type="text" name="title" class="editor-title" required maxlength="200"
+               placeholder="标题" value="{{ note.title if note else '' }}">
+
+        <input type="text" name="tags" class="editor-tags" maxlength="200"
+               placeholder="标签（逗号分隔，可留空）—— 让这篇笔记参与「关联旧知」"
+               value="{{ note.tags if note and note.tags else '' }}">
+
+        <div class="editor-split">
+            <textarea name="content" class="editor-content" required
+                      placeholder="用 Markdown 写点什么…  Ctrl/Cmd + S 直接保存">{{ note.content if note else '' }}</textarea>
+            <div class="editor-preview prose-furina" id="note-preview"></div>
+        </div>
+
+        <div class="editor-actions">
+            <button type="submit" class="btn btn-primary">保存</button>
+            <a href="{% if note %}/notes/{{ note.id }}{% else %}/kb{% endif %}" class="btn btn-ghost">取消</a>
+            <span class="editor-hint">草稿会自动存在本机浏览器里，后端重启也不怕丢</span>
+        </div>
+    </form>
+</section>
+{% endblock %}

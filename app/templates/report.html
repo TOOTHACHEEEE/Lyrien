@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}学习周报 · Lyrien{% endblock %}
+
+{% block content %}
+<section class="report-page">
+    <div class="section-header">
+        <h2>学习周报</h2>
+        <button class="btn btn-refresh" id="report-btn" onclick="generateReport(this)">生成本周周报</button>
+    </div>
+    <p class="report-status" id="report-status"></p>
+
+    {% if profile %}
+    <div class="profile-panel">
+        <h3>兴趣画像</h3>
+        <div class="profile-bars">
+            {% for tag in profile %}
+            <div class="profile-row">
+                <span class="profile-name">{{ tag.name }}</span>
+                <span class="profile-track">
+                    <span class="profile-fill" style="width: {{ (tag.weight * 100) | round(0) }}%"></span>
+                </span>
+                <span class="profile-weight">
+                    {{ "%.2f" | format(tag.weight) }}
+                    {% if tag.prev is not none %}
+                        {% set delta = tag.weight - tag.prev %}
+                        {% if delta > 0.005 %}<span class="drift-up">▲{{ "%.2f" | format(delta) }}</span>
+                        {% elif delta < -0.005 %}<span class="drift-down">▼{{ "%.2f" | format(-delta) }}</span>{% endif %}
+                    {% else %}
+                        <span class="drift-new">new</span>
+                    {% endif %}
+                </span>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    {% if report %}
+    <article class="report-content">
+        <header class="report-head">
+            <h3>{{ report.week_start }} ~ {{ report.week_end }}</h3>
+            <time>生成于 {{ report.created_at[:16] }}</time>
+        </header>
+        <script type="application/json" id="report-raw">{{ report.content | tojson }}</script>
+        <div class="prose-furina" id="report-body"></div>
+    </article>
+    {% else %}
+    <p class="empty-hint">还没有周报 —— 点右上角「生成本周周报」，或等周日晚 21 点自动生成。</p>
+    {% endif %}
+
+    {% if history and history | length > 1 %}
+    <aside class="report-history">
+        <h3>历史周报</h3>
+        <ul>
+            {% for r in history %}
+            <li>
+                <a href="/report/{{ r.id }}"{% if report and r.id == report.id %} class="active"{% endif %}>
+                    {{ r.week_start }} ~ {{ r.week_end }}
+                </a>
+            </li>
+            {% endfor %}
+        </ul>
+    </aside>
+    {% endif %}
+</section>
+{% endblock %}

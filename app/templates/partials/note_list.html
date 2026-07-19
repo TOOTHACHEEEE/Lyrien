@@ -1,0 +1,26 @@
+{% if notes %}
+<div class="note-list">
+    {% for note in notes %}
+    <a href="/notes/{{ note.id }}" class="note-item">
+        <div class="note-item-head">
+            <h3>{{ note.title }}</h3>
+            <time>{{ note.created_at[:10] }}</time>
+        </div>
+        {% if note.excerpt %}
+        <p class="note-excerpt">{{ note.excerpt | safe }}</p>
+        {% endif %}
+        {% if note.tags %}
+        <div class="card-tags">
+            {% for tag in note.tags.split(',') %}
+                {% if tag.strip() %}<span class="tag-pill">{{ tag.strip() }}</span>{% endif %}
+            {% endfor %}
+        </div>
+        {% endif %}
+    </a>
+    {% endfor %}
+</div>
+{% else %}
+<p class="empty-hint">
+    {% if query %}没有找到与「{{ query }}」相关的笔记。{% else %}知识库还是空的 —— 去今日卡片点一次「深挖成教程」，第一篇笔记就会出现在这里。{% endif %}
+</p>
+{% endif %}

@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="feed-bar">
+    <form class="feed-form" onsubmit="submitFeed(event)">
+        <input type="url" name="url" class="feed-input" required
+               placeholder="投喂一个链接 —— 走同一管线，为你生成一张卡片">
+        <button type="submit" class="btn btn-primary" id="feed-btn">投喂</button>
+    </form>
+    <p class="feed-status" id="feed-status"></p>
+</div>
+
+<section id="card-container" hx-get="/cards-partial" hx-trigger="load" hx-swap="innerHTML">
+    {% include "partials/card_list.html" %}
+</section>
+{% endblock %}

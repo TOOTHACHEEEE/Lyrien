@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}{{ note.title }} · Lyrien 知识库{% endblock %}
+
+{% block content %}
+<article class="note-detail">
+    <header class="note-detail-head">
+        <h2>{{ note.title }}</h2>
+        <div class="note-meta">
+            <time>收录于 {{ note.created_at[:10] }}{% if note.updated_at %} · 编辑于 {{ note.updated_at[:10] }}{% endif %}</time>
+            {% if note.source_url %}
+            <a href="{{ note.source_url }}" target="_blank" rel="noopener" class="source-link">原文链接</a>
+            {% endif %}
+            <a href="/notes/{{ note.id }}/edit" class="source-link">编辑</a>
+        </div>
+        {% if note.tags %}
+        <div class="card-tags">
+            {% for tag in note.tags.split(',') %}
+                {% if tag.strip() %}<span class="tag-pill">{{ tag.strip() }}</span>{% endif %}
+            {% endfor %}
+        </div>
+        {% endif %}
+    </header>
+
+    <script type="application/json" id="note-raw">{{ note.content | tojson }}</script>
+    <div class="note-content prose-furina" id="note-content"></div>
+
+    {% if related %}
+    <aside class="related-notes">
+        <h3>关联旧知</h3>
+        <ul>
+            {% for r in related %}
+            <li>
+                <a href="/notes/{{ r.id }}">{{ r.title }}</a>
+                <span class="related-tags">共同标签：{{ r.shared_tags | join('、') }}</span>
+            </li>
+            {% endfor %}
+        </ul>
+    </aside>
+    {% endif %}
+</article>
+{% endblock %}

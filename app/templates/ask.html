@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block title %}问答 · Lyrien{% endblock %}
+
+{% block content %}
+<section class="ask-page">
+    <div class="section-header">
+        <h2>问问你的第二大脑</h2>
+    </div>
+
+    <form class="ask-form" onsubmit="askQuestion(event)">
+        <input type="text" name="q" class="ask-input" required autocomplete="off"
+               placeholder="基于你的知识库回答，例如：slab 分配器是怎么防溢出的？">
+        <button type="submit" class="btn btn-primary" id="ask-btn">提问</button>
+    </form>
+
+    <div class="ask-answer" id="ask-answer"></div>
+    <div class="ask-sources" id="ask-sources"></div>
+</section>
+{% endblock %}

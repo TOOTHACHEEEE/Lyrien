@@ -1,0 +1,94 @@
+{% if cooking %}
+<div class="cooking-stage">
+    <div class="water-orbits" aria-hidden="true">
+        <span class="orb"></span>
+        <span class="orb"></span>
+        <span class="orb"></span>
+    </div>
+    <h2>今日剧目正在排演</h2>
+    <p>后台正在抓取、筛选、生成……开演后页面会自动刷新。</p>
+</div>
+
+<!-- 只在 cooking 状态下轮询；卡片生成后这段会被替换掉，轮询自动停止 -->
+<div hx-get="/cards-partial" hx-trigger="every 5s" hx-target="#card-container" hx-swap="innerHTML" aria-hidden="true"></div>
+{% else %}
+<div class="section-header">
+    <h2>{{ date }} · 今日剧目</h2>
+    <button hx-post="/refresh" hx-swap="none" class="btn btn-refresh">
+        重新排演
+    </button>
+</div>
+
+<div class="programme">
+    {% for card in cards %}
+    <article class="act{% if loop.first %} act-featured{% endif %}">
+        <div class="furina-card{% if card.is_explore %} explore{% endif %}">
+            <div class="glow-layer" aria-hidden="true"></div>
+            <span class="act-numeral" aria-hidden="true">{{ "%02d" | format(loop.index) }}</span>
+
+            <div class="card-topline">
+                <span class="act-label">第 {{ loop.index }} 幕{% if loop.first %} · 开幕剧{% endif %}</span>
+                {% if card.is_explore %}
+                <span class="card-badge">特邀 · 探索卡</span>
+                {% endif %}
+            </div>
+
+            <h3 class="card-title">{{ card.title }}</h3>
+
+            <div class="card-body">
+                <p class="card-lead">{{ card.summary.core_concept }}</p>
+
+                <div class="card-fields">
+                    <div class="card-field">
+                        <span class="field-label">为何值得学</span>
+                        <p>{{ card.summary.why_learn }}</p>
+                    </div>
+                    <div class="card-field">
+                        <span class="field-label">关联旧知</span>
+                        <p>{{ card.summary.related_knowledge }}</p>
+                    </div>
+                </div>
+
+                <blockquote class="card-question">
+                    <span class="field-label">引导思考</span>
+                    <p>{{ card.summary.guide_question }}</p>
+                </blockquote>
+            </div>
+
+            <div class="card-actions">
+                <button onclick="digCard({{ card.id }}, this)" class="btn btn-primary btn-magnetic">
+                    深挖成教程
+                </button>
+                <span class="feedback-group" id="feedback-{{ card.id }}">
+                    {% if card.status == 'new' %}
+                    <button hx-post="/feedback/{{ card.id }}/up" hx-target="#feedback-{{ card.id }}" hx-swap="innerHTML" class="btn btn-ghost btn-magnetic">赞同</button>
+                    <button hx-post="/feedback/{{ card.id }}/down" hx-target="#feedback-{{ card.id }}" hx-swap="innerHTML" class="btn btn-ghost btn-magnetic">不感兴趣</button>
+                    <button hx-post="/feedback/{{ card.id }}/mastered" hx-target="#feedback-{{ card.id }}" hx-swap="innerHTML" class="btn btn-ghost btn-magnetic">已掌握</button>
+                    {% else %}
+                    <span class="feedback-note">已记录</span>
+                    {% endif %}
+                </span>
+            </div>
+
+            <div id="dig-{{ card.id }}" class="dig-output"></div>
+
+            <div class="card-foot">
+                <div class="card-tags">
+                    {% if card.tags %}
+                        {% for tag in card.tags.split(',') %}
+                            {% if tag.strip() %}
+                            <span class="tag-pill">{{ tag.strip() }}</span>
+                            {% endif %}
+                        {% endfor %}
+                    {% endif %}
+                </div>
+                <div class="card-source">
+                    <span>{{ card.source_name }}</span>
+                    <a href="{{ card.url }}" target="_blank" class="source-link">原文链接</a>
+                </div>
+            </div>
+        </div>
+    </article>
+    {% endfor %}
+</div>
+{% endif %}

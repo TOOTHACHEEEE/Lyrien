@@ -10,6 +10,7 @@ from fastapi.responses import HTMLResponse, RedirectResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
+from app.config import settings
 from app.db import get_db, init_db
 from app.feed import feed_status, start_feed
 from app.feedback import ACTIONS, apply_feedback
@@ -25,7 +26,7 @@ from app.notes import (
     search_notes,
     update_note,
 )
-from app.pipeline.jobs import has_today_cards, run_pipeline, scheduler, setup_scheduler
+from app.pipeline.jobs import run_pipeline, scheduler, setup_scheduler, today_card_count
 from app.pipeline.summarize import load_prompt
 from app.qa import build_context, retrieve_notes
 from app.report import (
@@ -99,11 +100,11 @@ async def lifespan(app: FastAPI):
     scheduler.start()
     for job in scheduler.get_jobs():
         print(f"[scheduler] 已注册 {job.name} (id={job.id})，下次运行: {job.next_run_time}")
-    if not has_today_cards():
-        print("[main] 今日卡片不存在，后台补跑管线...")
+    if today_card_count() < settings.cards_per_day:
+        print("[main] 今日卡片不足配额，后台补跑管线...")
         asyncio.create_task(run_pipeline())
     else:
-        print("[main] 今日卡片已存在")
+        print("[main] 今日卡片已达配额")
     if report_due_now():
         print("[main] 本周周报缺失，后台补跑生成...")
         asyncio.create_task(_safe_generate_report())
@@ -151,6 +152,18 @@ async def cards_partial(request: Request):
             "cooking": len(cards) == 0,
         },
     )
+
+
+@app.get("/pet-status")
+async def pet_status():
+    """桌宠状态源：今日卡片进度 + 待复习数，供 pet.js 决定播报内容。"""
+    cards = today_card_count()
+    return {
+        "cards": cards,
+        "quota": settings.cards_per_day,
+        "cooking": cards == 0,
+        "review_due": due_count(),
+    }
 
 
 @app.post("/refresh")

@@ -76,6 +76,12 @@ def prescreen(
     unmatched.sort(key=_explore_quality, reverse=True)
 
     main_pool = [dict(it, prescreen_score=s) for s, it in matched[:main_size]]
+    if not main_pool:
+        # 关键词零命中（中文标签对英文内容常如此）——按信源质量回填兴趣池，
+        # 相关性交给 LLM 精选判断，避免当日无卡可生成。
+        print("[filter] 兴趣标签零命中，按信源质量回填兴趣池")
+        main_pool = [dict(it, prescreen_score=_explore_quality(it)) for it in unmatched[:main_size]]
+        unmatched = unmatched[main_size:]
     explore_pool = [dict(it, prescreen_score=_explore_quality(it)) for it in unmatched[:explore_size]]
     print(f"[filter] 初筛: {len(items)} → 兴趣池 {len(main_pool)} / 探索池 {len(explore_pool)}")
     return main_pool, explore_pool

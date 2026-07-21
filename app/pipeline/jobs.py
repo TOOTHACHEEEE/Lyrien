@@ -15,10 +15,8 @@ from app.pipeline.summarize import generate_cards
 
 scheduler = AsyncIOScheduler()
 
-
-def has_today_cards() -> bool:
-    """检查今天是否已有卡片。"""
-    return today_card_count() > 0
+# 管线互斥锁：启动补跑、手动刷新、定时任务可能叠加触发，防止并发重入
+_pipeline_lock = asyncio.Lock()
 
 
 def today_card_count() -> int:
@@ -34,10 +32,25 @@ def today_card_count() -> int:
 async def run_pipeline(force: bool = False) -> dict[str, Any]:
     """异步运行完整管线。
 
-    - 默认幂等：今日已有卡片时只抓新条目，不重复生成（定时任务/启动补跑安全）。
-    - force=True（手动刷新）：若今日不足 cards_per_day 张则补差额，已满则不动，
-      避免重复点击无限追加当日卡片。
+    无论定时任务、启动补跑还是手动刷新（force），都以 cards_per_day 为上限补差额：
+    今日不足配额则补足，已满则不动。force 参数保留仅为兼容旧调用方，行为已无差别。
+    同一时刻只允许一个管线运行，重复触发直接跳过。
     """
+    if _pipeline_lock.locked():
+        print("[jobs] 管线已在运行，跳过本次触发")
+        return {"date": date.today().isoformat(), "new_items": 0, "new_cards": 0,
+                "card_ids": [], "skipped": "already_running"}
+    async with _pipeline_lock:
+        try:
+            return await _run_pipeline_locked()
+        except Exception as exc:
+            # create_task 触发的异常无人接收，这里兜底记录，避免静默失败
+            print(f"[jobs] 管线异常: {type(exc).__name__}: {exc}")
+            return {"date": date.today().isoformat(), "new_items": 0, "new_cards": 0,
+                    "card_ids": [], "error": f"{type(exc).__name__}: {exc}"}
+
+
+async def _run_pipeline_locked() -> dict[str, Any]:
     print("[jobs] 管线启动")
     init_db()
 
@@ -45,12 +58,12 @@ async def run_pipeline(force: bool = False) -> dict[str, Any]:
 
     card_ids: list[int] = []
     existing = today_card_count()
-    if existing and not force:
-        print(f"[jobs] 今日已有 {existing} 张卡片，跳过生成")
-    elif existing >= settings.cards_per_day:
+    if existing >= settings.cards_per_day:
         print(f"[jobs] 今日卡片已达 {existing}/{settings.cards_per_day}，不再追加")
     else:
         remaining = settings.cards_per_day - existing
+        if existing:
+            print(f"[jobs] 今日已有 {existing} 张卡片，补足差额 {remaining} 张")
         card_ids = await generate_cards(k=remaining)
 
     result = {

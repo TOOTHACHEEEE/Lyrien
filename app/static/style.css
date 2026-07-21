@@ -1764,3 +1764,125 @@ body::before {
     min-height: 35dvh;
   }
 }
+
+/* ============================================================
+   芙宁娜桌宠：贴内容区右下角的 Live2D 立绘 + 气泡播报
+   ============================================================ */
+#furina-pet {
+  position: fixed;
+  /* 钉在可见屏幕右下角，不随页面滚动消失 */
+  right: 1.2rem;
+  bottom: 1.2rem;
+  z-index: 90;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  pointer-events: none; /* 只有立绘可点，整体不挡页面 */
+}
+
+#furina-pet .pet-stage {
+  pointer-events: auto;
+  cursor: pointer;
+  animation: pet-float 3.6s ease-in-out infinite;
+}
+
+#furina-pet .pet-canvas {
+  width: 210px;
+  height: 270px;
+  filter: drop-shadow(0 6px 18px rgba(56, 189, 248, 0.35));
+}
+
+/* 静态降级立绘 */
+#furina-pet .pet-avatar {
+  width: 110px;
+  height: 110px;
+  object-fit: contain;
+  filter: drop-shadow(0 6px 18px rgba(56, 189, 248, 0.35));
+  transition: transform 0.25s ease;
+}
+
+#furina-pet .pet-avatar:hover {
+  transform: scale(1.06);
+}
+
+/* 表情反应动画（Live2D 模式下替代立绘差分） */
+#furina-pet .pet-react-bounce {
+  animation: pet-react-bounce 0.8s ease;
+}
+
+#furina-pet .pet-react-wiggle {
+  animation: pet-react-wiggle 0.7s ease;
+}
+
+@keyframes pet-react-bounce {
+  0%, 100% { transform: translateY(0) scale(1); }
+  30% { transform: translateY(-18px) scale(1.04); }
+  60% { transform: translateY(0) scale(0.98); }
+  80% { transform: translateY(-6px) scale(1.01); }
+}
+
+@keyframes pet-react-wiggle {
+  0%, 100% { transform: rotate(0); }
+  25% { transform: rotate(-3deg); }
+  50% { transform: rotate(3deg); }
+  75% { transform: rotate(-2deg); }
+}
+
+@keyframes pet-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+#furina-pet .pet-bubble {
+  max-width: 240px;
+  margin-bottom: 0.6rem;
+  padding: 0.55rem 0.85rem;
+  border-radius: var(--radius-panel);
+  background: var(--card-bg);
+  border: 1px solid var(--card-border-strong);
+  color: var(--text);
+  font-size: 0.85rem;
+  line-height: 1.5;
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  position: relative;
+  box-shadow: 0 8px 24px rgba(3, 10, 20, 0.5);
+}
+
+/* 气泡小尾巴，指向立绘 */
+#furina-pet .pet-bubble::after {
+  content: "";
+  position: absolute;
+  right: 2.2rem;
+  bottom: -6px;
+  width: 12px;
+  height: 12px;
+  transform: rotate(45deg);
+  background: rgba(13, 22, 38, 0.9);
+  border-right: 1px solid var(--card-border-strong);
+  border-bottom: 1px solid var(--card-border-strong);
+}
+
+#furina-pet .pet-bubble.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (max-width: 640px) {
+  #furina-pet .pet-stage {
+    transform: scale(0.72);
+    transform-origin: bottom right;
+  }
+
+  #furina-pet .pet-bubble {
+    max-width: 190px;
+    font-size: 0.78rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #furina-pet .pet-stage {
+    animation: none;
+  }
+}

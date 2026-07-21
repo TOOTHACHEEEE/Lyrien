@@ -66,3 +66,21 @@ def test_prescreen_respects_pool_size_limits():
     )
     assert len(main_pool) == 5
     assert len(explore_pool) == 3
+
+
+def test_prescreen_zero_match_falls_back_to_source_quality():
+    """标签零命中（如中文标签对英文内容）时，兴趣池按信源质量回填，保证有卡可生。"""
+    items = [
+        _item("Advanced compiler optimizations", source_weight=1.0),
+        _item("New kernel scheduler proposal", source_weight=2.0),
+        _item("Random gossip column", source_weight=0.5),
+    ]
+    main_pool, explore_pool = prescreen(
+        items, main_size=2, explore_size=2, tag_weights=TAG_WEIGHTS
+    )
+    assert [it["title"] for it in main_pool] == [
+        "New kernel scheduler proposal",
+        "Advanced compiler optimizations",
+    ]
+    # 回填占用后的剩余条目才进探索池，不重复
+    assert [it["title"] for it in explore_pool] == ["Random gossip column"]

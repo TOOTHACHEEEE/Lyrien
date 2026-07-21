@@ -1,6 +1,7 @@
 """LLM 精选与卡片生成（两阶段过滤的第二阶段）。"""
 
 import json
+import sqlite3
 from datetime import date
 from pathlib import Path
 from typing import Any
@@ -216,7 +217,12 @@ async def generate_cards(k: int | None = None) -> list[int]:
             item["fulltext"] = fulltext
         card_json = await generate_card(item)
         if card_json:
-            cid = save_card(item, card_json, is_explore=item.get("is_explore", False))
+            try:
+                cid = save_card(item, card_json, is_explore=item.get("is_explore", False))
+            except sqlite3.IntegrityError:
+                # 条目已被并发运行生成过卡片，跳过而不拖垮整批
+                print(f"[summarize] 条目 {item['id']} 已有卡片，跳过重复保存")
+                continue
             card_ids.append(cid)
 
     print(f"[summarize] 生成 {len(card_ids)} 张卡片")

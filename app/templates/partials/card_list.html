@@ -1,4 +1,4 @@
-{% if cooking %}
+{% if not cards %}
 <div class="cooking-stage">
     <div class="water-orbits" aria-hidden="true">
         <span class="orb"></span>
@@ -6,17 +6,18 @@
         <span class="orb"></span>
     </div>
     <h2>今日剧目正在排演</h2>
-    <p>后台正在抓取、筛选、生成……开演后页面会自动刷新。</p>
+    <p>后台正在抓取、筛选、生成，开演后页面会自动刷新。</p>
 </div>
-
-<!-- 只在 cooking 状态下轮询；卡片生成后这段会被替换掉，轮询自动停止 -->
-<div hx-get="/cards-partial" hx-trigger="every 5s" hx-target="#card-container" hx-swap="innerHTML" aria-hidden="true"></div>
 {% else %}
-<div class="section-header">
-    <h2>{{ date }} · 今日剧目</h2>
-    <button hx-post="/refresh" hx-swap="none" class="btn btn-refresh">
-        重新排演
-    </button>
+<div class="playbill">
+    <span class="playbill-date">{{ date | replace('-', '.') }}</span>
+    <h2 class="playbill-title">今日剧目</h2>
+    <p class="playbill-meta">
+        共 {{ cards | length }} 幕献映
+        <button hx-post="/refresh" hx-swap="none" class="btn btn-refresh">
+            <i class="ph ph-arrow-clockwise" aria-hidden="true"></i>重新排演
+        </button>
+    </p>
 </div>
 
 <div class="programme">
@@ -84,7 +85,7 @@
                 </div>
                 <div class="card-source">
                     <span>{{ card.source_name }}</span>
-                    <a href="{{ card.url }}" target="_blank" class="source-link">原文链接</a>
+                    <a href="{{ card.url }}" target="_blank" class="source-link">原文链接<i class="ph ph-arrow-square-out" aria-hidden="true"></i></a>
                 </div>
             </div>
         </div>

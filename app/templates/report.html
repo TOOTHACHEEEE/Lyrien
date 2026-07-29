@@ -6,7 +6,9 @@
 <section class="report-page">
     <div class="section-header">
         <h2>学习周报</h2>
-        <button class="btn btn-refresh" id="report-btn" onclick="generateReport(this)">生成本周周报</button>
+        <button class="btn btn-refresh" id="report-btn" onclick="generateReport(this)">
+            <i class="ph ph-sparkle" aria-hidden="true"></i>生成本周周报
+        </button>
     </div>
     <p class="report-status" id="report-status"></p>
 
@@ -46,7 +48,7 @@
         <div class="prose-furina" id="report-body"></div>
     </article>
     {% else %}
-    <p class="empty-hint">还没有周报 —— 点右上角「生成本周周报」，或等周日晚 21 点自动生成。</p>
+    <p class="empty-hint">还没有周报。点右上角「生成本周周报」，或等周日晚 21 点自动生成。</p>
     {% endif %}
 
     {% if history and history | length > 1 %}

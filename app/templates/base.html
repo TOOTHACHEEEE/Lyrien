@@ -5,11 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Lyrien{% endblock %}</title>
 
-    <!-- Fonts: Cinzel for opera/trial vibe, LXGW WenKai for Chinese body, JetBrains Mono for data -->
+    <!-- Fonts: Cinzel 拉丁歌剧字标 / Noto Serif SC 中文标题 / LXGW WenKai 正文 / JetBrains Mono 数据 -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=JetBrains+Mono:wght@400;500&family=Noto+Serif+SC:wght@600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/lxgw-wenkai-webfont@1.7.0/style.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/regular/style.css" rel="stylesheet">
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/htmx.org@1.9.12"></script>
@@ -19,35 +20,43 @@
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-    <!-- Floating water droplets -->
-    <div class="droplet" aria-hidden="true"></div>
-    <div class="droplet" aria-hidden="true"></div>
-    <div class="droplet" aria-hidden="true"></div>
-    <div class="droplet" aria-hidden="true"></div>
-    <div class="droplet" aria-hidden="true"></div>
-
-    <div class="page-wrap">
-        <header class="hero-badge">
-            <div class="title-row">
-                <h1>Lyrien</h1>
-            </div>
-            <p>个人 AI 学习引擎 · 每天清晨献映 3 至 5 幕知识剧目</p>
-        </header>
-
-        <nav class="main-nav" aria-label="主导航">
-            <a href="/" class="nav-link{% if request.url.path == '/' %} active{% endif %}">今日卡片</a>
-            <a href="/review" class="nav-link{% if request.url.path == '/review' %} active{% endif %}">
-                复习<span id="review-badge" class="nav-badge{% if not review_due %} hidden{% endif %}">{{ review_due or '' }}</span>
-            </a>
-            <a href="/kb" class="nav-link{% if request.url.path.startswith('/kb') or request.url.path.startswith('/notes') %} active{% endif %}">知识库</a>
-            <a href="/ask" class="nav-link{% if request.url.path == '/ask' %} active{% endif %}">问答</a>
-            <a href="/report" class="nav-link{% if request.url.path.startswith('/report') %} active{% endif %}">周报</a>
-        </nav>
-
-        {% block content %}{% endblock %}
+    <!-- 深海歌剧院氛围层：光柱 / 流光 / 微粒 / 颗粒（固定定位，不响应事件） -->
+    <div class="ambient" aria-hidden="true">
+        <div class="ambient-rays"></div>
+        <div class="ambient-blobs"></div>
+        <canvas class="ambient-particles" id="ambient-particles"></canvas>
+        <div class="ambient-grain"></div>
     </div>
 
-    <div class="wave-footer" aria-hidden="true"></div>
+    <header class="topbar">
+        <div class="topbar-inner">
+            <a class="brand" href="/" aria-label="Lyrien 首页">
+                <svg class="brand-mark" viewBox="0 0 28 28" fill="none" aria-hidden="true">
+                    <path d="M3 8.5c3-2.6 6-2.6 9 0s6 2.6 9 0 3-1.4 4-2" />
+                    <path d="M3 14.5c3-2.6 6-2.6 9 0s6 2.6 9 0 3-1.4 4-2" />
+                    <path d="M3 20.5c3-2.6 6-2.6 9 0s6 2.6 9 0 3-1.4 4-2" />
+                </svg>
+                <span class="brand-word">Lyrien</span>
+            </a>
+            <nav class="main-nav" aria-label="主导航">
+                <a href="/" class="nav-link{% if request.url.path == '/' %} active{% endif %}">今日卡片</a>
+                <a href="/review" class="nav-link{% if request.url.path == '/review' %} active{% endif %}">
+                    复习<span id="review-badge" class="nav-badge{% if not review_due %} hidden{% endif %}">{{ review_due or '' }}</span>
+                </a>
+                <a href="/kb" class="nav-link{% if request.url.path.startswith('/kb') or request.url.path.startswith('/notes') %} active{% endif %}">知识库</a>
+                <a href="/ask" class="nav-link{% if request.url.path == '/ask' %} active{% endif %}">问答</a>
+                <a href="/report" class="nav-link{% if request.url.path.startswith('/report') %} active{% endif %}">周报</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="page-wrap">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="site-footer">
+        <span>个人 AI 学习引擎 · 每日清晨献映</span>
+    </footer>
 
     <script src="/static/script.js"></script>
     <!-- 芙宁娜桌宠：Live2D 渲染依赖（本地 vendor，顺序不可乱） -->

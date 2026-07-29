@@ -5,7 +5,7 @@
 {% block content %}
 <section class="review-page">
     <div class="section-header">
-        <h2>今日复习 · 到期 {{ cards | length }} 张</h2>
+        <h2>今日复习<span class="header-meta">到期 {{ cards | length }} 张</span></h2>
         <span class="review-stats">复习队列共 {{ mastered_total }} 张</span>
     </div>
 
@@ -29,9 +29,11 @@
             {% endif %}
 
             <div class="card-actions">
+                <button class="btn btn-primary btn-magnetic" onclick="explainCard({{ card.id }}, this)">AI 讲解</button>
                 <button class="btn btn-ghost btn-magnetic" onclick="quizCard({{ card.id }}, this)">AI 出题</button>
                 <a class="btn btn-ghost" href="{{ card.url }}" target="_blank" rel="noopener">重读原文</a>
             </div>
+            <div id="explain-{{ card.id }}" class="dig-output"></div>
             <div id="quiz-{{ card.id }}" class="quiz-output"></div>
 
             <div class="grade-row">
@@ -51,14 +53,14 @@
         {% if mastered_total %}
         <p>队列里还有 {{ mastered_total }} 张卡片在排队，到期的那天它们会准时出现在这里。</p>
         {% else %}
-        <p>复习队列还是空的 —— 在今日卡片上点「已掌握」，明天这张卡就会来考你。</p>
+        <p>复习队列还是空的。在今日卡片上点「已掌握」，明天这张卡就会来考你。</p>
         {% endif %}
     </div>
     {% endif %}
 
     {% if archaeology %}
     <aside class="archaeology">
-        <h3>🕰️ 知识考古 · 还记得吗</h3>
+        <h3><i class="ph ph-clock-countdown" aria-hidden="true"></i>知识考古 · 还记得吗</h3>
         <a href="/notes/{{ archaeology.id }}" class="archaeology-body">
             <strong>{{ archaeology.title }}</strong>
             <span class="archaeology-date">收录于 {{ archaeology.created_at[:10] }}</span>

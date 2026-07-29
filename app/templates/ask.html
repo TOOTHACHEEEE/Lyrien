@@ -9,8 +9,11 @@
     </div>
 
     <form class="ask-form" onsubmit="askQuestion(event)">
-        <input type="text" name="q" class="ask-input" required autocomplete="off"
-               placeholder="基于你的知识库回答，例如：slab 分配器是怎么防溢出的？">
+        <div class="input-shell">
+            <i class="ph ph-question" aria-hidden="true"></i>
+            <input type="text" name="q" class="ask-input" required autocomplete="off"
+                   placeholder="基于你的知识库回答，例如：slab 分配器是怎么防溢出的？">
+        </div>
         <button type="submit" class="btn btn-primary" id="ask-btn">提问</button>
     </form>
 

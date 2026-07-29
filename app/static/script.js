@@ -13,6 +13,8 @@ document.addEventListener("DOMContentLoaded", () => {
   renderNoteContent();
   renderReportContent();
   initNoteEditor();
+  initCardPolling();
+  initAmbientParticles();
 });
 
 /**
@@ -107,6 +109,47 @@ async function streamInto(url, target, { markdown = false, metaPrefix = NOTE_SAV
 }
 
 /**
+ * 首页卡片智能轮询（替代旧的 every-5s 整片刷新）：
+ * 只在卡片数未达配额时，每 4s 拉一次轻量的 /pet-status；
+ * 卡片数真的变了才刷新列表，且有深挖正在流式输出时推迟刷新，
+ * 避免整片替换 DOM 打断生成中的教程。配额满或超时后停止。
+ */
+function initCardPolling() {
+  const container = document.getElementById("card-container");
+  if (!container) return;
+
+  const POLL_INTERVAL_MS = 4000;
+  const POLL_CAP_MS = 15 * 60 * 1000; // 最多轮询 15 分钟，防止无限后台请求
+  const startedAt = Date.now();
+  let baseline = null;
+
+  const tick = async () => {
+    let status = null;
+    try {
+      const resp = await fetch("/pet-status");
+      status = await resp.json();
+    } catch { /* 单次失败下轮再试 */ }
+
+    if (status) {
+      if (baseline === null) {
+        baseline = status.cards;
+      } else if (status.cards !== baseline) {
+        // 有教程正在流式生成：本轮先不刷新，下轮继续检测（不更新 baseline）
+        if (!document.querySelector(".dig-output.streaming")) {
+          baseline = status.cards;
+          htmx.ajax("GET", "/cards-partial", "#card-container");
+        }
+      }
+      if (status.cards >= status.quota) return; // 配额已满，停止轮询
+    }
+    if (Date.now() - startedAt < POLL_CAP_MS) {
+      setTimeout(tick, POLL_INTERVAL_MS);
+    }
+  };
+  setTimeout(tick, POLL_INTERVAL_MS);
+}
+
+/**
  * 深挖成教程：流式生成 → Markdown 渲染 → 显示"已存入知识库"链接
  */
 async function digCard(cardId, btn) {
@@ -115,10 +158,12 @@ async function digCard(cardId, btn) {
 
   btn.disabled = true;
   btn.textContent = "深挖中…";
+  let saved = false;
 
   await streamInto(`/dig/${cardId}`, target, {
     markdown: true,
     onMeta: (noteId) => {
+      saved = true;
       const link = document.createElement("a");
       link.href = `/notes/${noteId}`;
       link.className = "note-link";
@@ -128,10 +173,30 @@ async function digCard(cardId, btn) {
     },
   });
 
-  if (!target.textContent.trim() && !target.innerHTML.trim()) {
+  // 流结束但没收到落库哨兵 = 生成被中断或失败，恢复按钮允许重试
+  if (!saved) {
     btn.disabled = false;
     btn.textContent = "深挖成教程";
+    if (!target.textContent.trim()) {
+      target.textContent = "生成被打断了，点击按钮重新深挖。";
+    }
   }
+}
+
+/**
+ * AI 讲解：复习时想不起来，流式生成 Markdown 讲解（不入库）
+ */
+async function explainCard(cardId, btn) {
+  const target = document.getElementById(`explain-${cardId}`);
+  if (!target) return;
+
+  btn.disabled = true;
+  btn.textContent = "讲解中…";
+
+  await streamInto(`/review/${cardId}/explain`, target, { markdown: true });
+
+  btn.disabled = false;
+  btn.textContent = "再讲一遍";
 }
 
 /**
@@ -406,4 +471,71 @@ function initNoteEditor() {
   form.addEventListener("submit", () => localStorage.removeItem(draftKey));
 
   renderPreview();
+}
+
+/**
+ * 深海氛围微粒：画布上数十个缓慢上浮的光点/气泡。
+ * 只操作 canvas 2d 上下文，开销极小；reduced-motion 时整体不启动。
+ * 标签页隐藏时 rAF 自动暂停，无需额外处理。
+ */
+function initAmbientParticles() {
+  const canvas = document.getElementById("ambient-particles");
+  if (!canvas) return;
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return;
+
+  const DPR = Math.min(window.devicePixelRatio || 1, 2);
+  let w = 0;
+  let h = 0;
+  let particles = [];
+
+  const count = () => Math.min(46, Math.max(20, Math.floor(window.innerWidth / 34)));
+
+  function resize() {
+    w = window.innerWidth;
+    h = window.innerHeight;
+    canvas.width = w * DPR;
+    canvas.height = h * DPR;
+    canvas.style.width = `${w}px`;
+    canvas.style.height = `${h}px`;
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  }
+
+  function spawn(anywhere) {
+    return {
+      x: Math.random() * w,
+      y: anywhere ? Math.random() * h : h + 10,
+      r: 0.7 + Math.random() * 1.9,
+      vy: 0.12 + Math.random() * 0.34, // 上浮速度
+      vx: (Math.random() - 0.5) * 0.1,
+      a: 0.1 + Math.random() * 0.3, // 基础透明度
+      phase: Math.random() * Math.PI * 2, // 漂移相位
+      drift: 0.004 + Math.random() * 0.008,
+    };
+  }
+
+  function tick() {
+    ctx.clearRect(0, 0, w, h);
+    ctx.fillStyle = "#bae6fd";
+    for (const p of particles) {
+      p.y -= p.vy;
+      p.phase += p.drift;
+      p.x += p.vx + Math.sin(p.phase) * 0.16;
+      if (p.y < -12) Object.assign(p, spawn(false));
+      // 透明度随相位呼吸，营造远处微光感
+      ctx.globalAlpha = p.a * (0.65 + 0.35 * Math.sin(p.phase * 2));
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+    requestAnimationFrame(tick);
+  }
+
+  resize();
+  particles = Array.from({ length: count() }, () => spawn(true));
+  window.addEventListener("resize", resize);
+  requestAnimationFrame(tick);
 }

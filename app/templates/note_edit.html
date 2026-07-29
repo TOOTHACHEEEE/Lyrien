@@ -20,7 +20,7 @@
                placeholder="标题" value="{{ note.title if note else '' }}">
 
         <input type="text" name="tags" class="editor-tags" maxlength="200"
-               placeholder="标签（逗号分隔，可留空）—— 让这篇笔记参与「关联旧知」"
+               placeholder="标签（逗号分隔，可留空），让这篇笔记参与「关联旧知」"
                value="{{ note.tags if note and note.tags else '' }}">
 
         <div class="editor-split">

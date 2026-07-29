@@ -3,8 +3,11 @@
 {% block content %}
 <div class="feed-bar">
     <form class="feed-form" onsubmit="submitFeed(event)">
-        <input type="url" name="url" class="feed-input" required
-               placeholder="投喂一个链接 —— 走同一管线，为你生成一张卡片">
+        <div class="input-shell">
+            <i class="ph ph-link" aria-hidden="true"></i>
+            <input type="url" name="url" class="feed-input" required
+                   placeholder="投喂一个链接，走同一管线为你生成一张卡片">
+        </div>
         <button type="submit" class="btn btn-primary" id="feed-btn">投喂</button>
     </form>
     <p class="feed-status" id="feed-status"></p>

@@ -5,16 +5,19 @@
 {% block content %}
 <section class="kb-page">
     <div class="section-header">
-        <h2>知识库 · {{ total }} 篇笔记</h2>
-        <a href="/notes/new" class="btn btn-primary">写笔记</a>
+        <h2>知识库<span class="header-meta">{{ total }} 篇笔记</span></h2>
+        <a href="/notes/new" class="btn btn-primary"><i class="ph ph-note-pencil" aria-hidden="true"></i>写笔记</a>
     </div>
 
     <div class="kb-search">
-        <input type="search" name="q" value="{{ query }}"
-               placeholder="搜索笔记全文（中文也可以）…"
-               hx-get="/kb/search" hx-trigger="input changed delay:400ms, search"
-               hx-target="#kb-results" hx-swap="innerHTML"
-               class="kb-search-input">
+        <div class="input-shell">
+            <i class="ph ph-magnifying-glass" aria-hidden="true"></i>
+            <input type="search" name="q" value="{{ query }}"
+                   placeholder="搜索笔记全文，中文也可以"
+                   hx-get="/kb/search" hx-trigger="input changed delay:400ms, search"
+                   hx-target="#kb-results" hx-swap="innerHTML"
+                   class="kb-search-input">
+        </div>
     </div>
 
     <div id="kb-results">

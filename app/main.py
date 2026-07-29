@@ -133,7 +133,7 @@ async def index(request: Request):
         page_context(
             cards=cards,
             date=date.today().isoformat(),
-            cooking=len(cards) == 0,
+            quota=settings.cards_per_day,
         ),
     )
 
@@ -149,7 +149,7 @@ async def cards_partial(request: Request):
             "request": request,
             "cards": cards,
             "date": date.today().isoformat(),
-            "cooking": len(cards) == 0,
+            "quota": settings.cards_per_day,
         },
     )
 
@@ -231,15 +231,16 @@ async def dig_card(card_id: int):
 
     async def event_generator():
         chunks: list[str] = []
-        try:
-            async for chunk in chat_completion_stream(messages, temperature=0.6):
-                chunks.append(chunk)
-                yield chunk
-        finally:
-            content = "".join(chunks).strip()
-            if content:
-                note_id = save_note(card_title, content, card_id=card_id)
-                yield f"\n{NOTE_SAVED_PREFIX}{note_id}"
+        # 只有流正常跑完才落库。客户端中途断开（页面刷新/导航/轮询替换 DOM）
+        # 时生成器在 yield 处被关闭，不会执行到落库 —— 否则半截教程会被当成
+        # "已深挖过"（note_for_card 命中），永远无法重新生成。
+        async for chunk in chat_completion_stream(messages, temperature=0.6):
+            chunks.append(chunk)
+            yield chunk
+        content = "".join(chunks).strip()
+        if content:
+            note_id = save_note(card_title, content, card_id=card_id)
+            yield f"\n{NOTE_SAVED_PREFIX}{note_id}"
 
     return StreamingResponse(event_generator(), media_type="text/plain; charset=utf-8")
 
@@ -386,6 +387,35 @@ async def review_quiz(card_id: int):
     prompt = load_prompt("quiz").format(title=row["title"], fulltext=body)
     messages = [
         {"role": "system", "content": "你是一位严格但友善的导师。"},
+        {"role": "user", "content": prompt},
+    ]
+
+    async def event_generator():
+        async for chunk in chat_completion_stream(messages, temperature=0.5):
+            yield chunk
+
+    return StreamingResponse(event_generator(), media_type="text/plain; charset=utf-8")
+
+
+@app.get("/review/{card_id}/explain")
+async def review_explain(card_id: int):
+    """AI 讲解：复习时想不起来，基于卡片全文流式重建理解（只读辅助，不入库）。"""
+    with get_db() as conn:
+        row = conn.execute(
+            """
+            SELECT i.fulltext, i.summary, i.title
+            FROM cards c JOIN items i ON c.item_id = i.id
+            WHERE c.id = ?
+            """,
+            (card_id,),
+        ).fetchone()
+    if not row:
+        return StreamingResponse(iter(["卡片不存在"]), media_type="text/plain; charset=utf-8")
+
+    body = (row["fulltext"] or row["summary"] or "")[:6000]
+    prompt = load_prompt("explain").format(title=row["title"], fulltext=body)
+    messages = [
+        {"role": "system", "content": "你是一位善于帮人回忆的导师。"},
         {"role": "user", "content": prompt},
     ]
 
